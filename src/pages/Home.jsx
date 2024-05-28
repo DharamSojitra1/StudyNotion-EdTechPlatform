@@ -9,7 +9,7 @@ import ExploreMore from '../components/core/HomePage/ExploreMore'
 import TimeLineSection from '../components/core/HomePage/TimeLineSection'
 import LearningLanguageSection from '../components/core/HomePage/LearningLanguageSection'
 import InstructorSection from '../components/core/HomePage/InstrutorSection'
-import Footer from '../components/common/footer'
+import Footer from '../components/common/Footer'
 
 const Home = () => {
   return (
