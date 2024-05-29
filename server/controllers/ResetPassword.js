@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const crypto = require('crypto');
 const mailSender = require("../utlis/mailSender");
 const bcrypt = require("bcrypt");
 
@@ -14,32 +15,34 @@ exports.resetPasswordToken = async(req, res) => {
         if(!user){
             return res.json({
                 success:false,
-                message:'Your Email is not Registered with us',
+                message:`This Email: ${email} is not Registered With Us Enter a Valid Email `,
             });
         }
 
         //Generate Token
-        const token = crypto.randomUUID();
+        const token = crypto.randomBytes(20).toString("hex");
 
         //Update user by adding token and expiration time 
         const updateDetails = await User.findByIdAndUpdate(
                                                             {email:email},
                                                             {
                                                                 token:token,
-                                                                resetPasswordExpires:Date.now() + 5*60*1000,
+                                                                resetPasswordExpires:Date.now() + 3600000   ,
                                                             },
                                                             {new: true}
         );
 
+        console.log("DETAILS", updatedDetails);
+        
         //Create URL
         const url = `https://localhost:3000/update-password/${token}`;
 
         //Send Mail containg the url
-        await mailSender(email,"Password Reset Link", `Password Reset Link: ${url}`);
+        await mailSender(email,"Password Reset Link", `Password Reset Link: ${url}. Please click this url to reset your password.`);
 
         // Return Response
 
-        return res.json({
+        return res.status(200).json({
             success:true,
             message:'Email Sent Successfully, Please check email and change Password',
         });
@@ -78,7 +81,7 @@ exports.resetPassword = async(req, res) => {
             });
         }
         //Token Time Check
-        if( userDetails.resetPasswordExpires < Date.now() ){
+        if( userDetails.resetPasswordExpires > Date.now() ){
             return res.json({
                 success:false,
                 message:'Token is expired, Please Regenerate your Token',

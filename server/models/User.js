@@ -21,6 +21,14 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
+    active: {
+        type: Boolean,
+        default: true,
+    },
+    approved: {
+        type: Boolean,
+        default: true,
+    },
     accountType:{
         type:String,
         enum:["Admin","Student","Instructor"],
@@ -53,7 +61,8 @@ const userSchema = new mongoose.Schema({
             ref:"CourseProcess",
         }
     ],
-
-});
+    
+}, { timestamps: true }
+);
 
 module.exports = mongoose.model("User", userSchema); 

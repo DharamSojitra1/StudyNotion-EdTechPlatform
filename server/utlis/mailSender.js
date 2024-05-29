@@ -1,5 +1,5 @@
-const { models } = require("mongoose");
 const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const mailSender = async (email, title, body) => {
     try{
