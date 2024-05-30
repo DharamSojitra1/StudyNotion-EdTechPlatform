@@ -18,7 +18,7 @@ const Navbar = () => {
   const location = useLocation()
 
   const ref = useRef(null)
-  const [subLinks, setSubLinks] = useState([])
+  const [subLinks, setSubLinks] = useState([])  
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(true)
 
@@ -41,7 +41,7 @@ const Navbar = () => {
     return matchPath({ path: route }, location.pathname)
   }
 
-  console.log("Token value in Navbar:", token) // Debugging log
+  console.log("Token value in Navbar:", token) 
 
   return (
     <div className={`flex h-14 items-center justify-center border-b-[1px] border-b-richblack-700 ${location.pathname !== "/" ? "bg-richblack-800" : ""} transition-all duration-200`}>
@@ -62,7 +62,7 @@ const Navbar = () => {
                         <div className='absolute left-[50%] top-0 -z-10 h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-5'></div>
                         {loading ? (
                           <p className='text-center'>Loading...</p>
-                        ) : subLinks.length ? (
+                        ) : (subLinks && subLinks.length) ? (
                           <>
                             {subLinks
                               ?.filter(

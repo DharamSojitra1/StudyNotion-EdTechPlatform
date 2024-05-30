@@ -4,7 +4,7 @@ const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Profile = require("../models/Profile");
-const mailSender = require("../utlis/mailSender");
+const mailSender = require("../utils/mailSender");
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 require("dotenv").config();
 
@@ -74,107 +74,107 @@ exports.sendOTP = async (req, res) => {
 
 // SignUP
 
-exports.signUp = async (req, res) => {
+exports.signup = async (req, res) => {
+  try {
+    // Destructure fields from the request body
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      accountType,
+      contactNumber,
+      otp,
+    } = req.body
+    // Check if All Details are there or not
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !otp
+    ) {
+      return res.status(403).send({
+        success: false,
+        message: "All Fields are required",
+      })
+    }
+    // Check if password and confirm password match
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password and Confirm Password do not match. Please try again.",
+      })
+    }
 
-    try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email })
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists. Please sign in to continue.",
+      })
+    }
 
-        // Data fetch from request body 
-        const{
-            firstName,
-            lastName,
-            email,
-            password,
-            confirmPassword,
-            accountType,
-            contactNumber,
-            otp
-        } = req.body;
+    // Find the most recent OTP for the email
+    const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1)
+    console.log(response)
+    if (response.length === 0) {
+      // OTP not found for the email
+      return res.status(400).json({
+        success: false,
+        message: "The OTP is not valid",
+      })
+    } else if (otp !== response[0].otp) {
+      // Invalid OTP
+      return res.status(400).json({
+        success: false,
+        message: "The OTP is not valid",
+      })
+    }
 
-        // Validate 
-        if(!firstName || !lastName || !email || !password || !confirmPassword || !otp) {
-            return res.status(403).json({
-                success:false,
-                message:"All Fields are Required",
-            })
-        }
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10)
 
-        // 2 Password matching
-        if(password !== confirmPassword){
-            return res.status(400).json({
-                success:false,
-                message:'Password does not match, please Try Again!!!'
-            });
-        }
+    // Create the user
+    let approved = ""
+    approved === "Instructor" ? (approved = false) : (approved = true)
 
-        //check user already exist or not 
-        const existingUser = await User.findOne({email});
-        if(existingUser) {
-            return res.status(400).json({
-                success:false,
-                message:'User is already registered',
-            });
-        }
+    // Create the Additional Profile For User
+    const profileDetails = await Profile.create({
+      gender: null,
+      dateOfBirth: null,
+      about: null,
+      contactNumber: null,
+    })
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      contactNumber,
+      password: hashedPassword,
+      accountType: accountType,
+      approved: approved,
+      additionalDetails: profileDetails._id,
+      image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`,
+    })
 
-        // Find most recent OTP stored for the User
-        const recentOtp = await OTP.findOne({email}).sort({createAt:-1}).limit(1);
-        console.log(recentOtp);
-
-        //validate OTP
-        if(recentOtp.length == 0){
-            // OTP not Found
-            return res.status(400).json({
-                success:false,
-                message:'OTP Not Found',
-            });
-        } else if(otp !== recentOtp.otp){
-            //Invalid OTP
-            return res.status(400).json({
-                success:false,
-                message:"Invalid OTP",
-            });
-        }
-
-        // Hash Password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create the user
-        let approved = ""
-        approved === "Instructor" ? (approved = false) : (approved = true)
-
-        // Entry in DB
-        const profileDetails = await Profile.create({
-            gender: null,
-            dateOfBirth: null,
-            about: null,
-            contactNumber: null,
-        });
-
-        const user = await User.create({
-            firstName,
-            lasttName,
-            email,
-            contactNumber,
-            password:hashedPassword,
-            accountType,
-            addintionalDetails:profileDetails._id,
-            image: `https://api.dicebear.com/5.x/initails/svg?seed=${firstName} ${lastName}`
-        })
-
-        // Return res
-        return res.status(200).json({
-            success:true,
-            message:'User is Regietered Successfully',
-            user,
-        });
-
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            success:false,
-            message:'User Registration Failed, Please Try Again!!! '
-        });
-    } 
-};
+    return res.status(200).json({
+      success: true,
+      user,
+      message: "User registered successfully",
+    })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({
+      success: false,
+      message: "User cannot be registered. Please try again.",
+    })
+  }
+}
 
 // Login
 
@@ -202,7 +202,7 @@ exports.login = async(req, res) => {
         }
 
         //Generate JWT, after password matching
-        if(await bcrypy.compare(password, user.password)){
+        if(await bcrypt.compare(password, user.password)){
             const payload = {
                 email: user.email,
                 id: user._id,

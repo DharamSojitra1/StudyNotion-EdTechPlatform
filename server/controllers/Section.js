@@ -51,7 +51,7 @@ exports.createSection = async (req, res) => {
     }
 };
 
-exports.updatedSection = async(req,res) => {
+exports.updateSection = async(req,res) => {
     try {
         //data fetch 
         const {sectionName, sectionId, courseId} = req.body;

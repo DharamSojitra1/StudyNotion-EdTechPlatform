@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
         required:true,
         trim:true,
     },
-    lasttName:{
+    lastName:{
         type:String,
         required:true,
         trim:true,
@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
         enum:["Admin","Student","Instructor"],
         required:true,
     },
-    addintionalDetails:{
+    additionalDetails:{
         type:mongoose.Schema.Types.ObjectId,
         required:true,
         ref:"Profile",
