@@ -122,32 +122,32 @@ exports.getAllUserDetails = async(req, res) => {
 
 exports.updateDisplayPicture = async (req, res) => {
     try {
-        const displayPicture = req.files.displayPicture
-        const userId = req.user.id
-        const image = await uploadImageToCloudinary(
-            displayPicture,
-            process.env.FOLDER_NAME,
-            1000,
-            1000
-        )
-        console.log(image)
-        const updatedProfile = await User.findByIdAndUpdate(
-            { _id: userId },
-            { image: image.secure_url },
-            { new: true }
-        )
-        res.send({
-            success: true,
-            message: `Image Updated successfully`,
-            data: updatedProfile,
-        })
+      const displayPicture = req.files.displayPicture
+      const userId = req.user.id
+      const image = await uploadImageToCloudinary(
+        displayPicture,
+        process.env.FOLDER_NAME,
+        1000,
+        1000
+      )
+      console.log(image)
+      const updatedProfile = await User.findByIdAndUpdate(
+        { _id: userId },
+        { image: image.secure_url },
+        { new: true }
+      )
+      res.send({
+        success: true,
+        message: `Image Updated successfully`,
+        data: updatedProfile,
+      })
     } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        })
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+      })
     }
-};
+  }
   
 exports.getEnrolledCourses = async (req, res) => {
     try {

@@ -7,7 +7,7 @@ const User = require("../models/User");
 exports.auth = async(req, res, next) => {
     try {
         //extract token
-        const token = req.cookies.token || req.body.token || req.header("Authorisation").replace("Bearer ", "");
+        const token = req.cookies.token || req.body.token || req.header("Authorization").replace("Bearer ", "");
 
         //if token missing , then return response
         if(!token){
@@ -18,7 +18,7 @@ exports.auth = async(req, res, next) => {
         }
         //Verify the Token
         try {
-            const decode = jwt.verify(token, process.env.JWT_SECRET);
+            const decode = await jwt.verify(token, process.env.JWT_SECRET);
             console.log(decode);
             req.user = decode;
         } catch (err) {
@@ -42,7 +42,8 @@ exports.auth = async(req, res, next) => {
 
 exports.isStudent = async (req, res, next) => {
     try {
-        if(req.user.accountType !== "Student"){
+        const user = await User.findOne({ email: req.user.email });
+        if(user.accountType !== "Student"){
             return res.status(401).json({
                 success:false,
                 message:'This is Protected route for Students Only',
