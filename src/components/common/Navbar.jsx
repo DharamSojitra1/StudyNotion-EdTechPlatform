@@ -29,6 +29,7 @@ const Navbar = () => {
       setLoading(true)
       try {
         const res = await apiConnector("GET", categories.CATEGORIES_API)
+        console.log("Fetched categories:", res.data.data)
         setSubLinks(res.data.data)
       } catch (error) {
         console.log("Could not fetch Categories.", error)
@@ -39,9 +40,7 @@ const Navbar = () => {
 
   const matchRoute = (route) => {
     return matchPath({ path: route }, location.pathname)
-  }
-
-  console.log("Token value in Navbar:", token) 
+  } 
 
   return (
     <div className={`flex h-14 items-center justify-center border-b-[1px] border-b-richblack-700 ${location.pathname !== "/" ? "bg-richblack-800" : ""} transition-all duration-200`}>
@@ -62,29 +61,20 @@ const Navbar = () => {
                         <div className='absolute left-[50%] top-0 -z-10 h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-5'></div>
                         {loading ? (
                           <p className='text-center'>Loading...</p>
-                        ) : (subLinks && subLinks.length) ? (
+                        ) : (subLinks.length > 0) ? (
                           <>
-                            {subLinks
-                              ?.filter(
-                                (subLink) => subLink?.courses?.length > 0
-                              )
-                              ?.map((subLink, index) => (
-                                <Link
-                                  to={`/catalog/${subLink.name
-                                    .split("")
-                                    .join("-")
-                                    .toLowerCase()
-                                    }`}
-                                  className='rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50'
-                                  key={index}
-                                >
-                                  <p>{subLink.name}</p>
-                                </Link>
-                              ))
-                            }
+                            {subLinks.map((subLink, index) => (
+                              <Link
+                                to={`/catalog/${subLink.name.split(" ").join("-").toLowerCase()}`}
+                                className='rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50'
+                                key={index}
+                              >
+                                <p>{subLink.name}</p>
+                              </Link>
+                            ))}
                           </>
                         ) : (
-                          <p className='text-center '>No Courses Found</p>
+                          <p className='text-center'>No Courses Found</p>
                         )}
                       </div>
                     </div>
